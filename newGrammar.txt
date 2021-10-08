@@ -1,0 +1,34 @@
+# = done
+
+program := declaration*
+
+declaration := funDecl | varDecl | statement
+funDecl := "fun" function | identifier "(" parameters? ")" "=>" statement
+
+#function  := identifier "(" parameters? ")" block
+#parameters := identifier ( "," identifier )*
+arguments := expr ( "," expr )*
+
+statement := exprStmt | forStmt | ifStmt | printStmt | returnStmt | block
+#exprStmt := expr (";" | "\n")
+forStmt := "for" "(" (varDecl | exprStmt | ";") expr? ";" expr? ")" statement
+ifStmt := "if" "(" expr ")" statement
+#printStmt := "print" expr ";"
+#returnStmt := "return" expr? ";"
+#block := "{" declaration* "}"
+
+
+
+#expr := assignment
+#assignment := identifier "=" assignment | term
+
+#term := factor ( ("-" | "+") factor)*
+#factor := unary ( ("/" | "*") unary)*
+#unary := "-" unary | call
+call := primary "(" arguments? ")" | primary
+#primary := num | ""(" term ")" | identifier
+
+#num := DIGIT+ ("." DIGIT+)?
+#identifier := ALPHA ( ALPHA | DIGIT )*
+#ALPHA := "a" ... "z" | "A" ... "Z" | "_"
+#DIGIT := "0" ... "9"
