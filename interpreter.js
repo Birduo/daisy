@@ -11,9 +11,9 @@ class DaisyVar {
 }
 
 class Environment {
-    variables = []
-    functions = []
-    child
+    variables = [] // vars should be 2-length arrays with the format [id, value]
+    functions = [] // functions should be Declaration objects with type "fun"
+    children = []  // children should be Environment objects
 }
 
 class Interpreter {
