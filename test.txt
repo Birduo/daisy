@@ -1,4 +1,3 @@
-a = 4 * 3
-print(a)
-a = 5
-print(a)
+fun monkey(a, b) {
+
+}

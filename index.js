@@ -16,6 +16,10 @@ I.printTree()
 //console.log(I.stmts)
 I.run()
 
+console.log("All variables: ")
+console.log(I.global.variables)
+console.log(I.global.functions)
+
 // TODO: add environments + comments (get current test.txt to work and not print "undefined")
 // ALSO: need to add detection on reassignment
 

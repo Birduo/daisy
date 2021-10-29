@@ -427,7 +427,7 @@ class Parser {
             //console.log("CHECKING FOR ARGS")
             while (this.toks[this.current][0] == "id") { // adding the identifiers to the function definition as parameters
                 //console.log("ARG FOUND: " + this.toks[this.current][0])
-                D.args.push(this.toks[this.current++][0])
+                D.args.push(this.toks[this.current++][1])
                 
                 if (this.toks[this.current][0] == ",") {
                     this.current++

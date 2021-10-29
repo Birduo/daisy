@@ -10,6 +10,18 @@ class DaisyVar {
     }
 }
 
+class DaisyFn {
+    name
+    value
+    args
+
+    constructor(name, value, args) {
+        this.name = name
+        this.value = value
+        this.args = args
+    }
+}
+
 class Environment {
     variables = [] // vars should be 2-length arrays with the format [id, value]
     functions = [] // functions should be Declaration objects with type "fun"
@@ -27,15 +39,16 @@ class Interpreter {
     interpret(t) {
         switch (t.type) {
             case "fun":
+                console.log("Function found!: " + t.operator)
+                let fn = new DaisyFn(t.operator, t.child, t.args)
+                this.global.functions.push(fn)
                 break
             case "assn":
-                console.log("Assignment found! Variable:")
-
                 //need to add detection on reassignment
 
                 let variable = new DaisyVar(t.operand[0].operator, this.interpret(t.operand[1]))
                 this.global.variables.push(variable)
-                console.log(this.global.variables[this.global.variables.length - 1])
+                console.log("Assignment found! Variable:" + t.operand[0].operator)
                 break
             case "stmt":
                 this.interpret(t.child)
