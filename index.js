@@ -13,15 +13,14 @@ console.log(arr)
 let P = new parser.Parser(arr)
 let I = new interpreter.Interpreter(P.parse())
 I.printTree()
-//console.log(I.stmts)
+
 I.run()
 
-console.log("All variables: ")
-console.log(I.global.variables)
-console.log(I.global.functions)
+console.log(I.global.toString())
 
 // TODO: add environments + comments (get current test.txt to work and not print "undefined")
-// ALSO: need to add detection on reassignment
+// ALSO: need to add detection on reassignment / add maps to check for vars
+// TODO(2): add recursion to printing functions and environments
 
 // NOTE: if i want to add => function definitions, i need to check the scope for an id, for example:
 // balls(x) => x <-- that should check the scope for any balls variables before making it a function definition

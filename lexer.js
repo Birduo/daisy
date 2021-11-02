@@ -77,7 +77,7 @@ function lex(str) {
         let keywords = [
             "return",
             "print",
-            "fun"
+            "fn"
         ]
 
         if (keywords.includes(out[i][1])) {

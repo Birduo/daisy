@@ -1,3 +1,4 @@
-fun monkey(a, b) {
-
+fn balls(x, y) {
+    sum = x + y
+    return(sum)
 }

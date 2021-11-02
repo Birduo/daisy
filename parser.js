@@ -9,6 +9,7 @@ block := "{" declaration* "}"
 semi := ";" | "\n"
 */
 
+let interpreter = require("./interpreter")
 
 
 class Term {
@@ -116,9 +117,13 @@ class Expression {
 class Statement {
     type = ""
     operand = []
+    envOptional
 
     constructor(type) {
         this.type = type
+        if (type == "block") {
+            this.envOptional = new interpreter.Environment()
+        }
     }
 
     toString() {
@@ -174,7 +179,7 @@ class Declaration {
         let out = ""
 
         switch (this.type) {
-            case "fun":
+            case "fn":
                 out += this.type + " " + this.operator + " : ("
 
                 for (let i = 0; i < this.args.length; i++) {
@@ -215,11 +220,21 @@ class Parser {
         let newTree = []
         //console.log("REMOVING SEMIS")
         for (let i = 0; i < arr.length; i++) {
-            if (arr[i].type == "stmt" && arr[i].child.operand[0].operand.operand[0].type == "semi") {
-                //console.log("IGNORING SEMI")
-            } else {
-                //console.log("PUSHING: " + arr[i])
-                newTree.push(arr[i])
+            try {
+                if (arr[i].type == "stmt") {
+                    try {
+                        if (arr[i].child.operand[0].operand.operand[0].type == "semi") {}
+                        else {
+                            newTree.push(arr[i])
+                        }
+                    } catch (e) {
+                        newTree.push(arr[i])
+                    }
+                } else {
+                    newTree.push(arr[i])
+                }
+            } catch (e) {
+                console.error(`READING THE WRONG STUFF i: ${i} arr.length: ${arr.length}\n${e}`)
             }
         }
 
@@ -402,7 +417,7 @@ class Parser {
             this.parseSemi()
         } else { // exprStmt
             S.operand.push(this.parseExpression())
-            
+
             if (!(S.type == "expr" && S.operand[0].operand.operand[0].type == "semi")) {
                 this.parseSemi() //if it isn't a semicolon, grab another semicolon hoe
             }
@@ -413,14 +428,14 @@ class Parser {
     parseDecl() { //declaration := funDecl | varDecl | statement
         let D = new Declaration("")
 
-        if (this.toks[this.current][0] == "fun") { //funDecl
+        if (this.toks[this.current][0] == "fn") { //funDecl
             this.current++
             if (this.toks[this.current][0] == "id") {
                 D.operator = this.toks[this.current][1]
                 this.current++
             } else throw new Error("Identifier expected before function declaration. Recieved " + this.toks[this.current][0] + " instead (" + this.toks[this.current][1] + ")")
 
-            D.type = "fun" // setting declaration type to function declaration
+            D.type = "fn" // setting declaration type to function declaration
 
             this.matchSymbol("(")
             
@@ -441,6 +456,7 @@ class Parser {
             D.type = "stmt"
             D.child = this.parseStmt()
         }
+        console.log(D)
 
         return D
     }

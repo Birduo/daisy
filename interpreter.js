@@ -22,10 +22,25 @@ class DaisyFn {
     }
 }
 
-class Environment {
-    variables = [] // vars should be 2-length arrays with the format [id, value]
-    functions = [] // functions should be Declaration objects with type "fun"
-    children = []  // children should be Environment objects
+class Environment { // REDESIGNING TO MAPS NOW
+    id =  Math.floor(Math.random() * 100) // getting a random id for potential debugging
+    variables = new Map() // vars should be 2-length arrays with the format [id, value]
+    functions = new Map() // functions should be Declaration objects with type "fun"
+    
+    toString() {
+        let out = `${this.id}\n`
+        if (this.variables.size > 0) {
+            for (const [key, value] of this.variables) 
+                out += `${key} = ${value}`
+        }
+        
+        if (this.functions.size > 0) {
+            for (const [key, value] of this.functions) 
+                out += `${key}(${value.args}) = ${value.value}`
+        }
+
+        return out
+    }
 }
 
 class Interpreter {
@@ -38,16 +53,16 @@ class Interpreter {
 
     interpret(t) {
         switch (t.type) {
-            case "fun":
+            case "fn":
                 console.log("Function found!: " + t.operator)
                 let fn = new DaisyFn(t.operator, t.child, t.args)
-                this.global.functions.push(fn)
+                this.global.functions.set(fn.name, fn)
                 break
             case "assn":
                 //need to add detection on reassignment
 
                 let variable = new DaisyVar(t.operand[0].operator, this.interpret(t.operand[1]))
-                this.global.variables.push(variable)
+                this.global.variables.set(variable.name, variable)
                 console.log("Assignment found! Variable:" + t.operand[0].operator)
                 break
             case "stmt":
@@ -115,5 +130,6 @@ class Interpreter {
 }
 
 module.exports = {
-    Interpreter
+    Interpreter,
+    Environment
 }
