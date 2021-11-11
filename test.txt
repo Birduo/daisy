@@ -1,4 +1,10 @@
-fn balls(x, y) {
-    sum = x + y
-    return(sum)
+fn add(a, b) {
+    print(a + b)
 }
+
+#fn one() {
+#    print(1)
+#}
+
+#one()
+add(1, 2)

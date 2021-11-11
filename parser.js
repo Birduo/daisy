@@ -299,6 +299,17 @@ class Parser {
         } else if (["\n", ";"].includes(this.toks[this.current][0])) {
             //console.log("SEMI FOUND")
             return new Term("semi", this.toks[this.current++][0])
+        } else if (this.toks[this.current][0] == "#") { 
+            // console.log("COMMENT FOUND!")
+
+            while (this.current < this.toks.length) {
+                this.current++
+                if (["\n", ";"].includes(this.toks[this.current][0])) {
+                    // console.log("Newline found")
+                    // console.log(`Current: ${this.current}, Length: ${this.toks.length}`)
+                    return new Term("semi", this.toks[this.current++][0])
+                }
+            }
         } else {
             console.log("bomboclaat: " + [this.toks[this.current][0]])
             this.current++
@@ -456,7 +467,7 @@ class Parser {
             D.type = "stmt"
             D.child = this.parseStmt()
         }
-        console.log(D)
+        // console.log(D)
 
         return D
     }

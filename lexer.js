@@ -36,7 +36,7 @@ function lex(str) {
 
             type = "id"
             sum += ch            
-        } else if (ch.match(/[-+*\/\%();\n{}=,<>]/g)) {
+        } else if (ch.match(/[-+*\/\%();\n{}=,<>#]/g)) {
             let pushed = false
             if (sum == "=") { // testing for =>
                 if (ch.match(/[>=]/g)) {
