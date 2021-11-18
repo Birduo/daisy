@@ -8,7 +8,7 @@ text += ";"
 
 arr = lexer.lex(text)
 
-console.log(arr)
+// console.log(arr)
 
 let P = new parser.Parser(arr)
 let I = new interpreter.Interpreter(new interpreter.Environment(P.parse()))

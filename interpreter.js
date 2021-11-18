@@ -33,6 +33,7 @@ class Environment { // REDESIGNING TO MAPS NOW
     variables = new Map() // vars should be 2-length arrays with the format [id, value]
     functions = new Map() // functions should be Declaration objects with type "fun"
     decls = []
+    parentEnv
 
     constructor(decls) {
         this.decls = decls
@@ -41,10 +42,10 @@ class Environment { // REDESIGNING TO MAPS NOW
     toString() {
         let out = `${this.id}\n`
         for (const [key, value] of this.variables)
-            out += `${key} = ${value.value}`
+            out += `${key} = ${value.value}\n`
     
         for (const [key, value] of this.functions)
-            out += `${key}(${value.args}) = ${value.value}`
+            out += `${key}(${value.args}) = ${value.value}\n`
                 
 
         return out
@@ -59,37 +60,50 @@ class Interpreter {
     }
 
     interpret(t) {
+        let currentEnv = this.env
+
         switch (t.type) {
             case "fn":
-                console.log("Function found!: " + t.operator)
                 let fn = new DaisyFn(t.operator, t.child, t.args)
                 this.env.functions.set(fn.name, fn)
                 break
             case "call":
-                console.log("call found!")
-                console.log(t)
+                currentEnv = this.env
 
-                if (this.env.functions.has(t.operator)) {
-                    let calledFn = this.env.functions.get(t.operator)
-                    console.log(calledFn)
-                    
-                    if (t.operand.length != calledFn.args.length)
-                        throw new Error(`Call arg cound does not match expected number of variables: ${t.operand.length}/${calledFn.args.length}`)
+                while (true) {
+                    if (currentEnv.functions.has(t.operator)) {
+                        let calledFn = currentEnv.functions.get(t.operator)
+                        // console.log(calledFn)
 
+                        if (t.operand.length != calledFn.args.length) {
+                            throw new Error (`Call arg cound does not match expected number of variables: ${t.operand.length}/${calledFn.args.length}`)
+                        }
 
-                    // Adding the variables from the call to the values of the function...
-                    for (let i = 0; i < calledFn.args.length; i++) {
-                        console.log(`Argument #${i+1} getting added to environment.`)
-                        calledFn.env.variables.set(calledFn.args[i], this.interpret(t.operand[i]))
+                        // Adding the variables from the call to the values of the function...
+                        for (let i = 0; i < calledFn.args.length; i++) {
+                            let toAssign = this.interpret(t.operand[i])
+                            calledFn.env.variables.set(calledFn.args[i], new DaisyVar(calledFn.args[i], toAssign))
+                        }
+
+                        let I = new Interpreter(calledFn.env)
+
+                        I.env.parentEnv = currentEnv
+
+                        I.interpret(calledFn.value)
+
+                        return currentEnv.functions.get(t.operator)
+                    } else {
+                        if (currentEnv.parentEnv != undefined) {
+                            currentEnv = currentEnv.parentEnv
+                        } else {
+                            throw new Error("Function not found: " + t.operator)
+                        }
                     }
-
-                    // TODO: interpret the inside of the function stupid
-                    console.log(calledFn.env.variables)
-
-                    return this.env.functions.get(t.operator)
                 }
                 
                 throw new Error("Function not found: " + t.operator)
+            case "block":
+                return this.interpret(t.operand[0])
             case "assn":
                 // need to add detection on reassignment
                 // GOTTA ADD SCOPE!
@@ -110,10 +124,21 @@ class Interpreter {
                 // GOTTA ADD SCOPE!
                 // console.log("ID: " + t.operator)
 
-                if (this.env.variables.has(t.operator))
-                    return this.env.variables.get(t.operator).value
-                
-                throw new Error("Variable not found: " + t.operator)
+                currentEnv = this.env
+
+                while (true) {
+                    if (currentEnv.variables.has(t.operator)) {
+                        // console.log(`This environment DOES contain ${t.operator}`)
+                        // for some reason functions refer to them just by the operator while global uses .value suffix
+                        return currentEnv.variables.get(t.operator).value
+                    } else {
+                        if (currentEnv.parentEnv != undefined) {
+                            currentEnv = currentEnv.parentEnv
+                        } else {
+                            throw new Error("Variable not found: " + t.operator)
+                        }
+                    }
+                }
             case "num":
                 return parseFloat(t.operator)
             case "term":

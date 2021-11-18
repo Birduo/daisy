@@ -1,10 +1,15 @@
+c = 3
+
 fn add(a, b) {
     print(a + b)
+    # THIS NEEDS A RETURN STATEMENT
 }
 
-#fn one() {
-#    print(1)
-#}
+fn one() {
+    print(1)
+}
 
-#one()
-add(1, 2)
+one()
+c = add(c, c) # for some reason this is printing [object Object] instead of 6 (probs the mf call thats doing that)
+              # IM NOT RETURNING IM SO DUMB
+print(c)
