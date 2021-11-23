@@ -242,8 +242,13 @@ class Parser {
     }
 
     parseSemi() {
-        if ([";", "\n"].includes(this.toks[this.current][0])) {
-            this.current++
+        if ([";", "\n", "#"].includes(this.toks[this.current][0])) {
+            if (this.toks[this.current][0] == "#") {
+                //placeholder ig
+            } else {
+                this.current++
+            }
+            
         } else {
             throw new Error("; or newline expected. Recieved " + this.toks[this.current][1] + " instead")
         }

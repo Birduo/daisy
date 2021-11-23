@@ -31,7 +31,7 @@ class DaisyFn {
 class Environment { // REDESIGNING TO MAPS NOW
     id =  Math.floor(Math.random() * 2147483647).toString(16) // getting a random id for potential debugging
     variables = new Map() // vars should be 2-length arrays with the format [id, value]
-    functions = new Map() // functions should be Declaration objects with type "fun"
+    // functions = new Map() // functions should be Declaration objects with type "fun"
     decls = []
     parentEnv
 
@@ -44,12 +44,18 @@ class Environment { // REDESIGNING TO MAPS NOW
         for (const [key, value] of this.variables)
             out += `${key} = ${value.value}\n`
     
-        for (const [key, value] of this.functions)
-            out += `${key}(${value.args}) = ${value.value}\n`
+        // for (const [key, value] of this.functions)
+        //     out += `${key}(${value.args}) = ${value.value}\n`
                 
 
         return out
     }
+}
+
+function ReturnThrow(metadata) {
+    const error = new Error("Return!");
+    error.metadata = metadata;
+    return error;
 }
 
 class Interpreter {
@@ -65,16 +71,23 @@ class Interpreter {
         switch (t.type) {
             case "fn":
                 let fn = new DaisyFn(t.operator, t.child, t.args)
-                this.env.functions.set(fn.name, fn)
+                // this.env.functions.set(fn.name, fn)
+                this.env.variables.set(fn.name, fn)
                 break
+            case "return":
+                // console.log("RETURN DETECTED!")
+                throw new ReturnThrow(this.interpret(t.operand[0].operand))
             case "call":
                 currentEnv = this.env
 
                 while (true) {
-                    if (currentEnv.functions.has(t.operator)) {
-                        let calledFn = currentEnv.functions.get(t.operator)
+                    // if (currentEnv.functions.has(t.operator)) {
+                    if (currentEnv.variables.has(t.operator)) {
+                        // let calledFn = currentEnv.functions.get(t.operator)
+                        let calledFn = currentEnv.variables.get(t.operator)
+                        // console.log("CALLED FUNCTION:::")
                         // console.log(calledFn)
-
+                    
                         if (t.operand.length != calledFn.args.length) {
                             throw new Error (`Call arg cound does not match expected number of variables: ${t.operand.length}/${calledFn.args.length}`)
                         }
@@ -82,16 +95,23 @@ class Interpreter {
                         // Adding the variables from the call to the values of the function...
                         for (let i = 0; i < calledFn.args.length; i++) {
                             let toAssign = this.interpret(t.operand[i])
-                            calledFn.env.variables.set(calledFn.args[i], new DaisyVar(calledFn.args[i], toAssign))
+                            // console.log(`TOASSIGN: ${toAssign}`)
+                            if (toAssign.env != undefined) {
+                                calledFn.env.variables.set(calledFn.args[i], toAssign)
+                            } else {
+                                calledFn.env.variables.set(calledFn.args[i], new DaisyVar(calledFn.args[i], toAssign))
+                                // the line above uses daisyvar. it should check for whether or not its a function
+                            }
                         }
 
                         let I = new Interpreter(calledFn.env)
 
                         I.env.parentEnv = currentEnv
 
-                        I.interpret(calledFn.value)
+                        return I.interpret(calledFn.value) // potentially wrong return       
 
-                        return currentEnv.functions.get(t.operator)
+                        // return currentEnv.functions.get(t.operator)
+                        // return currentEnv.variables.get(t.operator)
                     } else {
                         if (currentEnv.parentEnv != undefined) {
                             currentEnv = currentEnv.parentEnv
@@ -100,10 +120,21 @@ class Interpreter {
                         }
                     }
                 }
-                
-                throw new Error("Function not found: " + t.operator)
             case "block":
-                return this.interpret(t.operand[0])
+                // console.log("Interpreting Block!")
+                
+                try {
+                    this.interpret(t.operand[0])
+                } catch (err) {
+                    if (err.message == "Return!") {
+                        // console.log(err.metadata)
+                        return err.metadata
+                    }
+                }
+
+                return undefined
+                // this might be invalid, if it is return the line above
+                // basically returns undefined if the function doesnt return smth itself
             case "assn":
                 // need to add detection on reassignment
                 // GOTTA ADD SCOPE!
@@ -130,7 +161,16 @@ class Interpreter {
                     if (currentEnv.variables.has(t.operator)) {
                         // console.log(`This environment DOES contain ${t.operator}`)
                         // for some reason functions refer to them just by the operator while global uses .value suffix
-                        return currentEnv.variables.get(t.operator).value
+                        let out = currentEnv.variables.get(t.operator)
+                        // console.log(`ID FOUND:`)
+                        // console.log(out)
+
+                        // I need to return this as a function if its a function obv
+                        if (out.env != undefined) {  // env is exclusive to daisyfn
+                            return out // this returns in type DaisyFn
+                        } else {
+                            return out.value
+                        }
                     } else {
                         if (currentEnv.parentEnv != undefined) {
                             currentEnv = currentEnv.parentEnv
