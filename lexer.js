@@ -77,6 +77,8 @@ function lex(str) {
         let keywords = [
             "return",
             "print",
+            "if",
+            "else",
             "fn"
         ]
 

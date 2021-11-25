@@ -2,7 +2,7 @@
 statement := exprStmt | forStmt | ifStmt | printStmt | returnStmt | block
 exprStmt := expr (";" | "\n")
 forStmt := "for" "(" (varDecl | exprStmt | ";") expr? ";" expr? ")" statement
-ifStmt := "if" "(" expr ")" statement
+ifStmt := "if" "(" expr ")" statement ( "else" statement )?
 printStmt := "print" expr ";"
 returnStmt := "return" expr? ";"
 block := "{" declaration* "}"
@@ -127,7 +127,7 @@ class Statement {
     }
 
     toString() {
-        let out = "{"
+        let out = ""
 
         switch (this.type) {
             case "print":
@@ -145,8 +145,13 @@ class Statement {
 
                 out += ")"
                 break
+            case "if":
+                out += `if: \n    conditional: ${this.operand[0]}\n    stmt: ${this.operand[1]}`
+                if (this.operand[2] != undefined) 
+                    out += `\nelse: \n    stmt: ${this.operand[2]}`
+                break
             case "block":
-                out += this.type + ": {\n"
+                out += "block: {\n"
                 for (let i = 0; i < this.operand.length; i++) {
                     out += "    " + this.operand[i].toString()
                     out += "\n"
@@ -158,8 +163,6 @@ class Statement {
                 out += "placeholder"
                 break
         }
-
-        out += "}"
 
         return out
     }
@@ -316,7 +319,7 @@ class Parser {
                 }
             }
         } else {
-            console.log("bomboclaat: " + [this.toks[this.current][0]])
+            console.log("bomboclaat: " + [this.toks[this.current][0]] + `. previous tok: ${this.toks[this.current - 1]}`)
             this.current++
         }
     }
@@ -407,6 +410,16 @@ class Parser {
             S.operand[0] = this.parseExpression()
             this.matchSymbol(")")
             this.parseSemi()
+        } else if (this.toks[this.current][0] == "if") { 
+            // ifStmt := "if" expr statement ( "else" statement )?
+            S = new Statement("if")
+            this.current++
+            S.operand[0] = this.parseExpression()
+            S.operand[1] = this.parseStmt()
+            if (this.toks[this.current][0] === "else") { // checking for else statement
+                this.current++
+                S.operand[2] = this.parseStmt()
+            }
         } else if (this.toks[this.current][0] == "{") {
             let arr = [] //holds statements placed in the block
             this.current++
@@ -430,10 +443,10 @@ class Parser {
             }
 
             S.operand = newTree
-            this.parseSemi()
+            // this.parseSemi()
+            // made the executive decision to not yoink a semicolon at the end of blocks
         } else { // exprStmt
             S.operand.push(this.parseExpression())
-
             if (!(S.type == "expr" && S.operand[0].operand.operand[0].type == "semi")) {
                 this.parseSemi() //if it isn't a semicolon, grab another semicolon hoe
             }
@@ -488,5 +501,6 @@ class Parser {
 
 module.exports = {
     Term,
-    Parser
+    Parser,
+    Expression
 }

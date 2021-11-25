@@ -69,6 +69,22 @@ class Interpreter {
         let currentEnv = this.env
 
         switch (t.type) {
+            case "if":
+                let conditional
+
+                if (t.operand[0] != undefined && t.operand[0].type == undefined) { // if the type is undefined it gotta be a mf Expression
+                    conditional = this.interpret(t.operand[0].operand)
+                } else {
+                    conditional = this.interpret(t.operand[0])
+                }
+
+                if (conditional) {
+                    this.interpret(t.operand[1])
+                } else {
+                    if (t.operand[2] != undefined)
+                        this.interpret(t.operand[2])
+                }
+                break
             case "fn":
                 let fn = new DaisyFn(t.operator, t.child, t.args)
                 // this.env.functions.set(fn.name, fn)
@@ -85,8 +101,6 @@ class Interpreter {
                     if (currentEnv.variables.has(t.operator)) {
                         // let calledFn = currentEnv.functions.get(t.operator)
                         let calledFn = currentEnv.variables.get(t.operator)
-                        // console.log("CALLED FUNCTION:::")
-                        // console.log(calledFn)
                     
                         if (t.operand.length != calledFn.args.length) {
                             throw new Error (`Call arg cound does not match expected number of variables: ${t.operand.length}/${calledFn.args.length}`)

@@ -15,10 +15,10 @@ let I = new interpreter.Interpreter(new interpreter.Environment(P.parse()))
 // I.printTree()
 
 I.run()
-console.log("--------Verbose--------")
+console.log("--------Environment--------")
 console.log(I.env.toString())
 
-// TODO: add returns, if/else
+// TODO: add booleans, RECURSION!!
 // FOR RETURNS: USE THEM AS CUSTOM EXCEPTIONS !!!
 
 // NOTE: if i want to add => function definitions, i need to check the scope for an id, for example:

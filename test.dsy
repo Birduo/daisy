@@ -1,5 +1,10 @@
-fn one() { 
-    return(1)
+fn recursion_test(n) {
+    print(n)
+
+    if n {
+        recursion_test(n - 1)
+        #smth w scope here
+    }
 }
 
-print(one())
+recursion_test(10)
