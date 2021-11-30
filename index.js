@@ -15,10 +15,11 @@ let I = new interpreter.Interpreter(new interpreter.Environment(P.parse()))
 // I.printTree()
 
 I.run()
-console.log("--------Environment--------")
-console.log(I.env.toString())
+// console.log("--------Environment--------")
+// console.log(I.env.toString())
 
 // TODO: add booleans, RECURSION!!
+// Current TODO: fixing blocks, for some reason they're not running all the code inside
 // FOR RETURNS: USE THEM AS CUSTOM EXCEPTIONS !!!
 
 // NOTE: if i want to add => function definitions, i need to check the scope for an id, for example:

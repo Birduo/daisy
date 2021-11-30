@@ -68,6 +68,8 @@ class Interpreter {
     interpret(t) {
         let currentEnv = this.env
 
+        // console.log(`Current type: ${t.type}`)
+
         switch (t.type) {
             case "if":
                 let conditional
@@ -78,7 +80,7 @@ class Interpreter {
                     conditional = this.interpret(t.operand[0])
                 }
 
-                if (conditional) {
+                if (conditional != 0) {
                     this.interpret(t.operand[1])
                 } else {
                     if (t.operand[2] != undefined)
@@ -95,6 +97,8 @@ class Interpreter {
                 throw new ReturnThrow(this.interpret(t.operand[0].operand))
             case "call":
                 currentEnv = this.env
+
+                let scopecount = 0
 
                 while (true) {
                     // if (currentEnv.functions.has(t.operator)) {
@@ -122,13 +126,21 @@ class Interpreter {
 
                         I.env.parentEnv = currentEnv
 
+                        // console.log(calledFn.value)
+
                         return I.interpret(calledFn.value) // potentially wrong return       
 
                         // return currentEnv.functions.get(t.operator)
                         // return currentEnv.variables.get(t.operator)
                     } else {
                         if (currentEnv.parentEnv != undefined) {
-                            currentEnv = currentEnv.parentEnv
+                            scopecount++
+
+                            if (scopecount <= 100) {
+                                currentEnv = currentEnv.parentEnv
+                            } else {
+                                throw new Error("Function not found. Searched > 100 scopes.")
+                            }
                         } else {
                             throw new Error("Function not found: " + t.operator)
                         }
@@ -138,7 +150,12 @@ class Interpreter {
                 // console.log("Interpreting Block!")
                 
                 try {
-                    this.interpret(t.operand[0])
+                    t.envOptional.decls = t.operand
+                    t.envOptional.parentEnv = currentEnv
+
+                    let I = new Interpreter(t.envOptional)
+                    // console.log(t.envOptional)
+                    I.run()
                 } catch (err) {
                     if (err.message == "Return!") {
                         // console.log(err.metadata)

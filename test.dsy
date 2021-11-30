@@ -1,10 +1,12 @@
-fn recursion_test(n) {
-    print(n)
+# when recursing, enters infinite loop. might be in the while(true) in the "call" switch
+# it is in that while(true), namely in the else where the function isnt found in the current scope
 
+fn test(n) {
+    print(-n)
     if n {
-        recursion_test(n - 1)
-        #smth w scope here
+        print(99)
+        test(n - 1)
     }
 }
 
-recursion_test(10)
+test(10)
