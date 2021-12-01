@@ -87,6 +87,25 @@ class Interpreter {
                         this.interpret(t.operand[2])
                 }
                 break
+            case "while":
+                let whileCond
+
+                if (t.operand[0] != undefined && t.operand[0].type == undefined) { // if the type is undefined it gotta be a mf Expression
+                    whileCond = this.interpret(t.operand[0].operand)
+                } else {
+                    whileCond = this.interpret(t.operand[0])
+                }
+
+                while (whileCond != 0) {
+                    this.interpret(t.operand[1])
+                    if (t.operand[0] != undefined && t.operand[0].type == undefined) { // if the type is undefined it gotta be a mf Expression
+                        whileCond = this.interpret(t.operand[0].operand)
+                    } else {
+                        whileCond = this.interpret(t.operand[0])
+                    }
+                }
+
+                break
             case "fn":
                 let fn = new DaisyFn(t.operator, t.child, t.args)
                 // this.env.functions.set(fn.name, fn)
@@ -98,9 +117,12 @@ class Interpreter {
             case "call":
                 currentEnv = this.env
 
+                console.log(`Calling ${t.operator}`)
+
                 let scopecount = 0
 
                 while (true) {
+
                     // if (currentEnv.functions.has(t.operator)) {
                     if (currentEnv.variables.has(t.operator)) {
                         // let calledFn = currentEnv.functions.get(t.operator)
@@ -109,7 +131,6 @@ class Interpreter {
                         if (t.operand.length != calledFn.args.length) {
                             throw new Error (`Call arg cound does not match expected number of variables: ${t.operand.length}/${calledFn.args.length}`)
                         }
-
                         // Adding the variables from the call to the values of the function...
                         for (let i = 0; i < calledFn.args.length; i++) {
                             let toAssign = this.interpret(t.operand[i])
@@ -128,7 +149,8 @@ class Interpreter {
 
                         // console.log(calledFn.value)
 
-                        return I.interpret(calledFn.value) // potentially wrong return       
+                        let out = I.interpret(calledFn.value)
+                        return out // potentially wrong return       
 
                         // return currentEnv.functions.get(t.operator)
                         // return currentEnv.variables.get(t.operator)
@@ -171,7 +193,23 @@ class Interpreter {
                 // GOTTA ADD SCOPE!
                 let variable = new DaisyVar(t.operand[0].operator, this.interpret(t.operand[1]))
                 
-                this.env.variables.set(variable.name, variable)
+                // this.env.variables.set(variable.name, variable)
+                let startEnv = this.env
+                currentEnv = this.env
+
+                while (true) {
+                    if (currentEnv.variables.has(variable.name)) {
+                        currentEnv.variables.set(variable.name, variable)
+                        break
+                    } else {
+                        if (currentEnv.parentEnv != undefined) {
+                            currentEnv = currentEnv.parentEnv
+                        } else {
+                            startEnv.variables.set(variable.name, variable)
+                            break
+                        }
+                    }
+                }
 
                 // console.log("Assignment found! Variable: " + t.operand[0].operator)
                 break
@@ -212,6 +250,8 @@ class Interpreter {
                 }
             case "num":
                 return parseFloat(t.operator)
+            case "string":
+                return t.operator
             case "term":
                 return this.interpret(t.operand[0])
             case "expr":
@@ -249,13 +289,13 @@ class Interpreter {
             this.interpret(this.env.decls[i])
         }
     }
-
+    
     runVerbose() {
         for (let i = 0; i < this.env.decls.length; i++) {
             console.log(this.interpret(this.env.decls[i]))
         }
     }
-
+    
     printTree() {
         console.log("--------Tree--------")
         for (let i = 0; i < this.env.decls.length; i++) {

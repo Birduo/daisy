@@ -41,6 +41,7 @@ class Term {
 
                 break
             case "num":
+            case "string":
             case "id":
                 out += this.type + ": " + this.operator
                 break
@@ -149,6 +150,9 @@ class Statement {
                 out += `if: \n    conditional: ${this.operand[0]}\n    stmt: ${this.operand[1]}`
                 if (this.operand[2] != undefined) 
                     out += `\nelse: \n    stmt: ${this.operand[2]}`
+                break
+            case "while": 
+                out += `while: \n    conditional: ${this.operand[0]}\n    stmt: ${this.operand[1]}`
                 break
             case "block":
                 out += "block: {\n"
@@ -268,6 +272,8 @@ class Parser {
     parsePrimary() { //primary := num | ""(" term ")"
         if (this.toks[this.current][0] == "num") {
             return new Term("num", this.toks[this.current++][1])
+        } else if (this.toks[this.current][0] == "string") {
+            return new Term("string", this.toks[this.current++][1])
         } else if (this.toks[this.current][0] == "id") {
             let name = this.toks[this.current][1]
             this.current++
@@ -401,7 +407,7 @@ class Parser {
         return new Expression(this.parseAssignment())
     }
 
-    parseStmt() { //statement := exprStmt | forStmt | ifStmt | printStmt | returnStmt | block
+    parseStmt() { //statement := exprStmt | forStmt | ifStmt | whileStmt | printStmt | returnStmt | block
         let S = new Statement("expr")
 
         if (["print", "return"].includes(this.toks[this.current][0])) { // printStmt
@@ -420,6 +426,11 @@ class Parser {
                 this.current++
                 S.operand[2] = this.parseStmt()
             }
+        } else if (this.toks[this.current][0] == "while") { // whileStmt "while" expression statement ;
+            S = new Statement("while")
+            this.current++
+            S.operand[0] = this.parseExpression()
+            S.operand[1] = this.parseStmt()
         } else if (this.toks[this.current][0] == "{") {
             let arr = [] //holds statements placed in the block
             this.current++
