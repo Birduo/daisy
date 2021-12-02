@@ -1,8 +1,9 @@
-n = 5
-x = 1
-while x - n - 1 {
-    print("test " + x)
-    x = x + 1
+fn add(a, b) {
+    print(a + b)
 }
 
-# test comment!
+c = 3
+
+add(2, c)
+add(4.2, 5.3)
+# add(3.41, 12 * 84)
