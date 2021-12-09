@@ -27,3 +27,9 @@ while 1 {
     print("test")
 }
 ```
+
+### Main Bugs/Things to Implement In The Future:
+* Re-Implement Scope - recursion isn't working right now because of this
+* For Loops
+* Actual booleans instead of !0 and 0 for True and False
+* Add `node test.dsy` instead of `node .`
