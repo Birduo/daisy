@@ -2,7 +2,7 @@ fn for(a,b,c,d){
 i = a
 while i < b{
 d()
-i + c
+i = i + c
   }
 }
 
