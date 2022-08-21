@@ -1,0 +1,18 @@
+fn for(a,b,c,d){
+i = a
+while i < b{
+d()
+i = i + c
+  }
+}
+
+for(0,10,1,something)
+
+# Javascript Implementation: for(var i = 0; i < 10; i++) { something(i) }
+
+fn something(i) {
+print(i)
+}
+
+# May need some extra fixing-up, but it takes in a inital value to set "i" to, it takes a terminating statement (integer), it takes a value to add to "i", (for example passing in the int 1 is the same as saying i++ in a traditional for loop, and passing in (-1) is i--.
+# And it also takes a function to run. Not sure if I got the syntax right, but thats pretty much a for loop.
